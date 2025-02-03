@@ -9,8 +9,11 @@ USER, CHEF = 'foydalanuvchi', 'oshpaz'
 PHONE_NUMBER, GOOGLE, FACEBOOK = ('telefon raqam', 'google', 'facebook')
 MALE, FEMALE = ('erkak', 'ayol')
 
+
 class Certificates(models.Model):
-    image = models.ImageField(upload_to='accounts/chef/certificate-image/', blank=True)
+    image = models.ImageField(
+        upload_to='accounts/chef/certificate-image/', blank=True)
+
 
 class User(AbstractUser):
     AUTH_TYPE = (
@@ -29,7 +32,8 @@ class User(AbstractUser):
         (FEMALE, 'ayol'),
     )
 
-    phone_number = models.CharField(max_length=15, unique=True, validators=[RegexValidator(regex=r'^\+998\d{9}$', message="Telefon raqam noto'g'ri formatda")])
+    phone_number = models.CharField(max_length=15, unique=True, validators=[
+                                    RegexValidator(regex=r'^\+998\d{9}$', message="Telefon raqam noto'g'ri formatda")])
     fullname = models.CharField(max_length=250)
     remember_me = models.BooleanField(default=False)
     auth_type = models.CharField(max_length=50, choices=AUTH_TYPE)
@@ -46,7 +50,8 @@ class User(AbstractUser):
     certificate = models.ManyToManyField(Certificates, related_name='users')
     work_places = models.CharField(max_length=250, null=True, blank=True)
     work_place_now = models.CharField(max_length=250, null=True, blank=True)
-    achievements = models.ImageField(upload_to="accounts/chef/achievement-images/", blank=True)
+    achievements = models.ImageField(
+        upload_to="accounts/chef/achievement-images/", blank=True)
     objects = CustomUserManager()
     REQUIRED_FIELDS = ['fullname']
     USERNAME_FIELD = 'phone_number'
@@ -62,8 +67,15 @@ class Blocklist(models.Model):
 
 
 class Follow(models.Model):
+<<<<<<< HEAD
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
 
     class Meta:
         unique_together = ('following', 'follower')
+=======
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="following")
+    follower = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="follower")
+>>>>>>> 2052c927cd7f882269c2270d954bec2dfe6d50b1
