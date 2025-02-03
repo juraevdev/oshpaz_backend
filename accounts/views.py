@@ -4,6 +4,7 @@ from accounts.models import User
 from rest_framework.response import Response
 import logging
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.shortcuts import get_object_or_404
 # Create your views here.
 logger = logging.getLogger(__name__)
 
@@ -158,3 +159,59 @@ class UserProfileDetailApiView(generics.GenericAPIView):
         user = User.objects.get(id=id)
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class FollowUserApiView(generics.GenericAPIView):
+    serializer_class = FollowSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        following_user = get_object_or_404(User, id=kwargs['user_id'])
+
+
+        if request.user == following_user:
+            return Response({'error': 'You cannot follow yourself!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        follow, created = Follow.objects.get_or_create(follow=request.user, following=following_user)
+
+        return Response({'message': f"Your are now following {following_user.fullname}"}, status=status.HTTP_201_CREATED)
+    
+
+class UnfollowUserApiView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        following_user = get_object_or_404(User, id=kwargs['user_id'])
+        follow = Follow.objects.filter(follow=request.user, following=following_user)
+
+        follow.delete()
+        return Response({'message': f"You have unfollowed {following_user.fullname}"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class FollowersListApiView(generics.GenericAPIView):
+    serializer_class = UserSerializer
+
+    def get(self):
+        user = get_object_or_404(User, id=self.kwargs['user_id'])
+        return User.objects.filter(following__following=user)
+    
+
+class FollowingListApiView(generics.GenericAPIView):
+    serializer_class = UserSerializer
+
+    def get(self):
+        user = get_object_or_404(User, id=self.kwargs['user_id'])
+        return User.objects.filter(follower_follower = user)
+    
+class BlockUserApiView(generics.GenericAPIView):
+    serializer_class = BlocklistSerializer
+
+    def post(self, request, *args, **kwargs):
+        blocked_user = get_object_or_404(User, id=kwargs['user_id'])
+
+        if request.user == blocked_user:
+            return Response({'error': 'You cannot block yourself!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        block, created = Blocklist.objects.get_or_create(block=request.user, block=blocked_user)
+
+        return Response({'message': f'You are now blocked {blocked_user.fullname}'}, status=status.HTTP_201_CREATED)

@@ -38,10 +38,10 @@ class User(AbstractUser):
     birth_date = models.DateField(null=True, blank=True)
     email = models.EmailField(null=True)
     bio = models.TextField(null=True, blank=True)
-    facebook = models.CharField(max_length=250)
-    instagram = models.CharField(max_length=250)
-    linkedin = models.CharField(max_length=250)
-    telegram = models.CharField(max_length=250)
+    facebook = models.CharField(max_length=250, null=True)
+    instagram = models.CharField(max_length=250, null=True)
+    linkedin = models.CharField(max_length=250, null=True)
+    telegram = models.CharField(max_length=250, null=True)
     profile_image = models.ImageField(upload_to="accounts/chef/profile-image/")
     certificate = models.ManyToManyField(Certificates, related_name='users')
     work_places = models.CharField(max_length=250, null=True, blank=True)
@@ -53,10 +53,17 @@ class User(AbstractUser):
 
 
 class Blocklist(models.Model):
-    blocked_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    blocker = models.ForeignKey(User, related_name="blocking", on_delete=models.CASCADE)
+    blocked_user = models.ForeignKey(User, related_name="blocked_by", on_delete=models.CASCADE)
     blocked_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked_user')
 
 
 class Follow(models.Model):
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
+
+    class Meta:
+        unique_together = ('following', 'follower')

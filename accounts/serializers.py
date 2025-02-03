@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import User
+from accounts.models import User, Follow, Blocklist
 
 class OshpazRegisterSerializer(serializers.Serializer):
     fullname = serializers.CharField()
@@ -98,3 +98,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'fullname', 'phone_number', 'profile_image', 'gender'
         ]
+
+class UserSerializer(serializers.ModelSerializer):
+    followers_count = serializers.IntegerField(source='followers.count', read_only=True)
+    following_count = serializers.IntegerField(source='following.count', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'fullname', 'email', 'followers_count', 'following_count']
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ['id', 'follower', 'following']
+        read_only_fields = ['follower']
+
+class BlocklistSerializer(serializers.ModelSerializer):
+    blocked_date = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = Blocklist
+        fields = ['id', 'blocker', 'blocked_user', 'blocked_date']
+        read_only_fields = ['blocker']
