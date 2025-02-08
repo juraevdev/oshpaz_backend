@@ -215,3 +215,23 @@ class BlockUserApiView(generics.GenericAPIView):
         block, created = Blocklist.objects.get_or_create(block=request.user, block=blocked_user)
 
         return Response({'message': f'You are now blocked {blocked_user.fullname}'}, status=status.HTTP_201_CREATED)
+    
+class UnblockUserApiView(generics.GenericAPIView):
+
+    def delete(self, request, *args, **kwargs):
+        blocked_user = get_object_or_404(User, id=kwargs['user_id'])
+        block = Blocklist.objects.filter(blocker=request.user, blocked_user=blocked_user)
+
+        if not block.exists():
+            return Response({'error': 'This user is not blocked'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        block.delete()
+        return Response({'message': f'You have unblocked {blocked_user.get_full_name()}'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class BlockListApiView(generics.GenericAPIView):
+    serializer_class = BlocklistSerializer
+
+    def get_queryset(self):
+        return Blocklist.objects.filter(blocker=self.request.user)
+    

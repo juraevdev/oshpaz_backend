@@ -67,15 +67,8 @@ class Blocklist(models.Model):
 
 
 class Follow(models.Model):
-<<<<<<< HEAD
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
 
     class Meta:
         unique_together = ('following', 'follower')
-=======
-    following = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="following")
-    follower = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="follower")
->>>>>>> 2052c927cd7f882269c2270d954bec2dfe6d50b1

@@ -4,7 +4,8 @@ from accounts.views import (
     UserRegisterApiView, UserLoginApiView, UserProfileApiView, UserProfileDetailApiView,
     LogoutApiView,
     FollowUserApiView, UnfollowUserApiView,
-    FollowingListApiView, FollowersListApiView
+    FollowingListApiView, FollowersListApiView,
+    BlockUserApiView, UnblockUserApiView, BlockListApiView
 )
 
 urlpatterns = [
@@ -17,8 +18,11 @@ urlpatterns = [
     path('user/profile/', UserProfileApiView.as_view()),
     path('user/profile/<int:id>/', UserProfileDetailApiView.as_view()),
     path('user/follow/', FollowUserApiView.as_view()),
-    path('user/unfollow/', UnfollowUserApiView.as_view()),
-    path('user/all_following/', FollowingListApiView.as_view()),
-    path('user/all_follower/', FollowersListApiView.as_view ()),
+    path('unfollow/', UnfollowUserApiView.as_view()),
+    path('all_following/', FollowingListApiView.as_view()),
+    path('all_follower/', FollowersListApiView.as_view ()),
+    path('block/', BlockUserApiView.as_view()),
+    path('unblock/', UnblockUserApiView.as_view()),
+    path('blocklist/', BlockListApiView.as_view()),
     path('logout/', LogoutApiView.as_view()),
 ]
