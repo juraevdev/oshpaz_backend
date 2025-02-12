@@ -1,10 +1,11 @@
 from rest_framework import generics, status, permissions
 from accounts.serializers import *
-from accounts.models import User
+from accounts.models import User, UserConfirmation
 from rest_framework.response import Response
 import logging
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 # Create your views here.
 logger = logging.getLogger(__name__)
 
@@ -234,4 +235,62 @@ class BlockListApiView(generics.GenericAPIView):
 
     def get_queryset(self):
         return Blocklist.objects.filter(blocker=self.request.user)
+    
+
+class PasswordResetRequestApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetRequestSerializer
+
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            phone_number = serializer.data['phone_number']
+            user = User.objects.filter(phone_number=phone_number).first()
+            if user is None:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            code = user.generate_verify_code()
+            return Response({'message': 'Code is sent to your phone number', 'code': code})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetVerifyApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetVerifySerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            code = serializer.data['code']
+            user = request.user
+            otp_code = UserConfirmation.objects.filter(code=code).first()
+            if user is None:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            if otp_code is None or otp_code.expires < timezone.now():
+                return Response({'message': 'Incorrect verification code'}, status=status.HTTP_400_BAD_REQUEST)
+            otp_code.is_used = True
+            otp_code.save()
+            return Response({'message': 'Verification code is correct. Now you can change your password'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors)
+    
+
+class PasswordResetApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            phone_number = serializer.data['phone_number']
+            new_password = serializer.data['new_password']
+            confirm_password = serializer.data['confirm_password']
+            user = User.objects.filter(phone_number=phone_number).first()
+            otp_code = UserConfirmation.objects.filter(user=user, is_used=True).first()
+            if user is None:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            if otp_code is None:
+                return Response({'message': 'Verification code not confirmed'}, status=status.HTTP_404_NOT_FOUND)
+            if not otp_code.is_used:
+                return Response({'message': 'Verification code not confirmed in this phone number'}, status=status.HTTP_401_UNAUTHORIZED)
+            user.set_password(confirm_password)
+            user.save()
+            return Response({'message': 'Your password changed successfully!'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors)
     
