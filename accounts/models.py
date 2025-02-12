@@ -70,8 +70,8 @@ class User(AbstractUser):
 
 
 class Blocklist(models.Model):
-    blocker = models.ForeignKey(User, related_name="blocking", on_delete=models.CASCADE)
-    blocked_user = models.ForeignKey(User, related_name="blocked_by", on_delete=models.CASCADE)
+    blocker = models.ForeignKey(User, related_name="blocking", on_delete=models.CASCADE, null=True)
+    blocked_user = models.ForeignKey(User, related_name="blocked_by", on_delete=models.CASCADE, null=True)
     blocked_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

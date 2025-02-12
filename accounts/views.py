@@ -213,7 +213,7 @@ class BlockUserApiView(generics.GenericAPIView):
         if request.user == blocked_user:
             return Response({'error': 'You cannot block yourself!'}, status=status.HTTP_400_BAD_REQUEST)
         
-        block, created = Blocklist.objects.get_or_create(block=request.user, block=blocked_user)
+        block, created = Blocklist.objects.get_or_create(block=request.user, blocked_user=blocked_user)
 
         return Response({'message': f'You are now blocked {blocked_user.fullname}'}, status=status.HTTP_201_CREATED)
     
